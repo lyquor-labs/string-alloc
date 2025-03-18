@@ -13,24 +13,36 @@ pub struct String<A: Allocator + Clone + Default = Global> {
 }
 
 impl<A: Allocator + Clone + Default> String<A> {
+    /// Creates a new empty `String` with the specified allocator.
+    ///
+    /// See [`std::string::String::new`] for more details.
     pub fn new_in(alloc: A) -> Self {
         Self {
             vec: Vec::new_in(alloc),
         }
     }
 
+    /// Creates a new empty `String` with at least the specified capacity with the specified allocator.
+    ///
+    /// See [`std::string::String::with_capacity`] for more details.
     pub fn with_capacity_in(cap: usize, alloc: A) -> Self {
         Self {
             vec: Vec::with_capacity_in(cap, alloc),
         }
     }
 
+    /// Creates a new `String` from a string slice with the specified allocator.
+    ///
+    /// See [`std::string::String::from_str`] for more details.
     pub fn from_str_in(s: &str, alloc: A) -> Self {
         let mut vec = Vec::with_capacity_in(s.len(), alloc);
         vec.extend_from_slice(s.as_bytes());
         Self { vec }
     }
 
+    /// Converts a vector of bytes to a `String` with the specified allocator.
+    ///
+    /// See [`std::string::String::from_utf8`] for more details.
     pub fn from_utf8_in(vec: Vec<u8, A>) -> Result<Self, core::str::Utf8Error> {
         match str::from_utf8(&vec) {
             Ok(_) => Ok(Self { vec }),
@@ -38,19 +50,31 @@ impl<A: Allocator + Clone + Default> String<A> {
         }
     }
 
+    /// Converts a vector of bytes to a `String` with the specified allocator without checking that the string contains valid UTF-8.
+    ///
+    /// See [`std::string::String::from_utf8_unchecked`] for more details.
     pub unsafe fn from_utf8_unchecked_in(vec: Vec<u8, A>) -> Self {
         Self { vec }
     }
 
+    /// Appends a given string slice onto the end of this `String`.
+    ///
+    /// See [`std::string::String::push_str`] for more details.
     pub fn push_str(&mut self, s: &str) {
         self.vec.extend_from_slice(s.as_bytes());
     }
 
+    /// Appends the given char to the end of this `String`.
+    ///
+    /// See [`std::string::String::push`] for more details.
     pub fn push(&mut self, ch: char) {
         let mut buf = [0; 4];
         self.push_str(ch.encode_utf8(&mut buf));
     }
 
+    /// Removes the last character from the string buffer and returns it.
+    ///
+    /// See [`std::string::String::pop`] for more details.
     pub fn pop(&mut self) -> Option<char> {
         let s = self.deref();
         let ch = s.chars().rev().next()?;
@@ -59,6 +83,9 @@ impl<A: Allocator + Clone + Default> String<A> {
         Some(ch)
     }
 
+    /// Inserts a character into this `String` at a byte position.
+    ///
+    /// See [`std::string::String::insert`] for more details.
     pub fn insert(&mut self, idx: usize, ch: char) {
         let mut buf = [0; 4];
         let bytes = ch.encode_utf8(&mut buf);
@@ -72,6 +99,9 @@ impl<A: Allocator + Clone + Default> String<A> {
         self.vec.splice(byte_idx..byte_idx, bytes.as_bytes().iter().cloned());
     }
 
+    /// Removes a char from this `String` at a byte position and returns it.
+    ///
+    /// See [`std::string::String::remove`] for more details.
     pub fn remove(&mut self, idx: usize) -> char {
         let (start, ch) = {
             let s = self.deref();
@@ -84,6 +114,9 @@ impl<A: Allocator + Clone + Default> String<A> {
         ch
     }
 
+    /// Splits the string into two at the given byte index.
+    ///
+    /// See [`std::string::String::split_off`] for more details.
     pub fn split_off(&mut self, at: usize) -> Self
     where
         A: Clone,
@@ -102,6 +135,9 @@ impl<A: Allocator + Clone + Default> String<A> {
         Self { vec }
     }
 
+    /// Retains only the characters specified by the predicate.
+    ///
+    /// See [`std::string::String::retain`] for more details.
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(char) -> bool,
@@ -126,22 +162,37 @@ impl<A: Allocator + Clone + Default> String<A> {
         }
     }
 
+    /// Ensures that this `String`'s capacity is at least `additional` bytes larger than its length.
+    ///
+    /// See [`std::string::String::reserve`] for more details.
     pub fn reserve(&mut self, additional: usize) {
         self.vec.reserve(additional);
     }
 
+    /// Ensures that this `String`'s capacity is exactly `additional` bytes larger than its length.
+    ///
+    /// See [`std::string::String::reserve_exact`] for more details.
     pub fn reserve_exact(&mut self, additional: usize) {
         self.vec.reserve_exact(additional);
     }
 
+    /// Shrinks the capacity of this `String` to match its length.
+    ///
+    /// See [`std::string::String::shrink_to_fit`] for more details.
     pub fn shrink_to_fit(&mut self) {
         self.vec.shrink_to_fit();
     }
 
+    /// Truncates this `String`, removing all contents.
+    ///
+    /// See [`std::string::String::clear`] for more details.
     pub fn clear(&mut self) {
         self.vec.clear();
     }
 
+    /// Shortens this `String` to the specified length.
+    ///
+    /// See [`std::string::String::truncate`] for more details.
     pub fn truncate(&mut self, new_len: usize) {
         let current_len = self.chars().count();
         if new_len > current_len {
@@ -151,12 +202,25 @@ impl<A: Allocator + Clone + Default> String<A> {
         self.vec.truncate(byte_idx);
     }
 
+    /// Returns the length of this `String`, in bytes.
+    ///
+    /// See [`std::string::String::len`] for more details.
     pub fn len(&self) -> usize {
         self.vec.len()
     }
 
+    /// Returns the capacity of this `String`, in bytes.
+    ///
+    /// See [`std::string::String::capacity`] for more details.
     pub fn capacity(&self) -> usize {
         self.vec.capacity()
+    }
+
+    /// Converts the string into a new string with the specified allocator type.
+    ///
+    /// This method allows converting between different allocator types while preserving the string's contents.
+    pub fn to_string_in<B: Allocator + Clone + Default>(&self) -> String<B> {
+        String::from_str_in(self, B::default())
     }
 }
 

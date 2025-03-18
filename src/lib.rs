@@ -19,7 +19,7 @@
 //! - Full `no_std` support via `extern crate alloc`
 //! - Custom allocator compatibility
 //! - Thread-safe operations
-//! - `format!` macro support
+//! - `format_in!` macro support
 //! - Serde serialization/deserialization (optional)
 //!
 //! ## Design Choices
@@ -55,18 +55,16 @@
 //! ```rust
 //! #![feature(allocator_api)]
 //!
-//! use string_alloc::String;
+//! use string_alloc::{String, format_in};
 //! use std::alloc::Global;
-//! use std::fmt::Write;
 //!
 //! // Basic usage
 //! let mut s = String::from_str_in("hello", Global);
 //! s.push_str(" world");
 //!
-//! // Using format! macro
+//! // Using format_in! macro
 //! let name = "Alice";
-//! let mut s2 = String::new_in(Global);
-//! write!(s2, "Hello, {}!", name).unwrap();
+//! let s2 = format_in!(Global, "Hello, {}!", name);
 //!
 //! // With serde (requires "serde" feature)
 //! #[cfg(feature = "serde")]

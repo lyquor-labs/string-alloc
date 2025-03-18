@@ -1,6 +1,6 @@
 [package]
 name = "string-alloc"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 authors = ["Ted Yin <ted@lyquor.xyz>"]
 description = "Allocator-aware no-std-compatible String implementation"
