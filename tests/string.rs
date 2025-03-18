@@ -309,3 +309,22 @@ fn test_workarounds() {
     filtered.push_str(&filtered_right);
     assert_eq!(&*filtered, "Hello Word");
 }
+
+#[cfg(feature = "std")]
+#[test]
+fn test_std_string_conversions() {
+    // Test From<std::string::String>
+    let std_string = std::string::String::from("hello");
+    let our_string: String<Global> = std_string.clone().into();
+    assert_eq!(&*our_string, "hello");
+
+    // Test From<String<A>>
+    let std_string2: std::string::String = our_string.into();
+    assert_eq!(std_string2, "hello");
+
+    // Test roundtrip conversion
+    let std_string3 = std::string::String::from("roundtrip");
+    let our_string3: String<Global> = std_string3.clone().into();
+    let std_string4: std::string::String = our_string3.into();
+    assert_eq!(std_string3, std_string4);
+}

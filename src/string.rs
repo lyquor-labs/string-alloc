@@ -240,3 +240,57 @@ impl<A: Allocator + Clone + Default> Into<Vec<u8, A>> for String<A> {
         self.vec
     }
 }
+
+// Add format! macro support
+impl<A: Allocator + Clone + Default> fmt::Write for String<A> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.push_str(s);
+        Ok(())
+    }
+
+    fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> fmt::Result {
+        // Pre-allocate capacity based on the format string length
+        let capacity = args.as_str().map_or(0, |s| s.len());
+        self.reserve(capacity);
+
+        // Use the standard library's write_fmt implementation
+        fmt::write(self, args)
+    }
+}
+
+// Add conversions to/from std::string::String
+#[cfg(feature = "std")]
+impl<A: Allocator + Clone + Default> From<std::string::String> for String<A> {
+    fn from(s: std::string::String) -> Self {
+        Self::from_str_in(&s, A::default())
+    }
+}
+
+#[cfg(feature = "std")]
+impl<A: Allocator + Clone + Default> From<String<A>> for std::string::String {
+    fn from(s: String<A>) -> Self {
+        Self::from(&*s)
+    }
+}
+
+// Add serde support
+#[cfg(feature = "serde")]
+impl<A: Allocator + Clone + Default> serde::Serialize for String<A> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, A: Allocator + Clone + Default> serde::Deserialize<'de> for String<A> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = <&str>::deserialize(deserializer)?;
+        Ok(Self::from_str_in(s, A::default()))
+    }
+}

@@ -1,8 +1,19 @@
 [package]
 name = "string-alloc"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 authors = ["Ted Yin <ted@lyquor.xyz>"]
 description = "Allocator-aware no-std-compatible String implementation"
 license = "Apache-2.0"
 readme = "README.md"
+
+[dependencies]
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"], optional = true }
+
+[dev-dependencies]
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+
+[features]
+default = []
+serde = ["dep:serde"]
+std = []

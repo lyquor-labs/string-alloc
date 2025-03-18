@@ -1,6 +1,3 @@
-#![no_std]
-#![feature(allocator_api)]
-
 //! An allocator-aware, `no_std`-compatible implementation of `String<A>` that mirrors `std::string::String`.
 //!
 //! This crate provides a custom string implementation that supports custom allocators while maintaining
@@ -22,6 +19,8 @@
 //! - Full `no_std` support via `extern crate alloc`
 //! - Custom allocator compatibility
 //! - Thread-safe operations
+//! - `format!` macro support
+//! - Serde serialization/deserialization (optional)
 //!
 //! ## Design Choices
 //!
@@ -58,14 +57,38 @@
 //!
 //! use string_alloc::String;
 //! use std::alloc::Global;
+//! use std::fmt::Write;
 //!
+//! // Basic usage
 //! let mut s = String::from_str_in("hello", Global);
 //! s.push_str(" world");
+//!
+//! // Using format! macro
+//! let name = "Alice";
+//! let mut s2 = String::new_in(Global);
+//! write!(s2, "Hello, {}!", name).unwrap();
+//!
+//! // With serde (requires "serde" feature)
+//! #[cfg(feature = "serde")]
+//! {
+//!     use serde::{Serialize, Deserialize};
+//!     
+//!     #[derive(Serialize, Deserialize)]
+//!     struct Person {
+//!         name: String<Global>,
+//!     }
+//! }
 //! ```
 //!
 //! ## License
 //!
 //! Apache-2.0
+
+#![no_std]
+#![feature(allocator_api)]
+
+#[cfg(feature = "std")]
+extern crate std;
 
 extern crate alloc;
 
