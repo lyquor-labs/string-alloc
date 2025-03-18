@@ -258,6 +258,31 @@ impl<A: Allocator + Clone + Default> fmt::Write for String<A> {
     }
 }
 
+/// Creates a new `String` with the specified allocator and formats the arguments into it.
+///
+/// This macro is similar to the standard library's `format!` macro but returns our allocator-aware `String`.
+///
+/// # Examples
+///
+/// ```
+/// #![feature(allocator_api)]
+/// use string_alloc::{String, format_in};
+/// use std::alloc::Global;
+///
+/// let name = "World";
+/// let s = format_in!(Global, "Hello, {}!", name);
+/// assert_eq!(&*s, "Hello, World!");
+/// ```
+#[macro_export]
+macro_rules! format_in {
+    ($alloc:expr, $($arg:tt)*) => {{
+        use std::fmt::Write;
+        let mut s = $crate::String::new_in($alloc);
+        write!(s, $($arg)*).unwrap();
+        s
+    }};
+}
+
 // Add conversions to/from std::string::String
 #[cfg(feature = "std")]
 impl<A: Allocator + Clone + Default> From<std::string::String> for String<A> {
@@ -292,5 +317,14 @@ impl<'de, A: Allocator + Clone + Default> serde::Deserialize<'de> for String<A> 
     {
         let s = <&str>::deserialize(deserializer)?;
         Ok(Self::from_str_in(s, A::default()))
+    }
+}
+
+impl<A: Allocator + Clone + Default> core::ops::Add<&str> for String<A> {
+    type Output = Self;
+
+    fn add(mut self, other: &str) -> Self {
+        self.push_str(other);
+        self
     }
 }

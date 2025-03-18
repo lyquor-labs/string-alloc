@@ -1,8 +1,8 @@
 #![feature(allocator_api)]
 
-use string_alloc::String;
 use std::alloc::Global;
 use std::fmt::Write;
+use string_alloc::{format_in, String};
 
 #[test]
 fn test_format_macro() {
@@ -24,16 +24,18 @@ fn test_format_macro() {
 
 #[test]
 fn test_format_macro_direct() {
-    let name = "World";
-    let s = format!("Hello, {}!", name);
+    let name = String::from_str_in("World", Global);
+    let s = format_in!(Global, "Hello, {}!", name);
     assert_eq!(&*s, "Hello, World!");
 
-    let name = "Alice";
+    let name = String::from_str_in("Alice", Global);
     let age = 25;
-    let s2 = format!("{} is {} years old", name, age);
+    let s2 = format_in!(Global, "{} is {} years old", name, age);
     assert_eq!(&*s2, "Alice is 25 years old");
 
     // Test with UTF-8 characters
-    let s3 = format!("你好，{}！", "世界");
+    let name = String::from_str_in("世界", Global);
+    let s3 = format_in!(Global, "你好，{}！", name);
     assert_eq!(&*s3, "你好，世界！");
-} 
+}
+

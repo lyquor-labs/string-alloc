@@ -87,8 +87,7 @@
 #![no_std]
 #![feature(allocator_api)]
 
-#[cfg(feature = "std")]
-extern crate std;
+#[cfg(feature = "std")] extern crate std;
 
 extern crate alloc;
 
